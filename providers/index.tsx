@@ -1,14 +1,20 @@
-import React from 'react'
+"use client"
 
-import { HeaderThemeProvider } from './HeaderTheme'
-import { ThemeProvider } from './Theme'
+import { SessionProvider } from "next-auth/react"
+import { ThemeProvider } from "next-themes"
 
-export const Providers: React.FC<{
+export function Providers({ 
+  children,
+  session 
+}: { 
   children: React.ReactNode
-}> = ({ children }) => {
+  session: any
+}) {
   return (
-    <ThemeProvider>
-      <HeaderThemeProvider>{children}</HeaderThemeProvider>
-    </ThemeProvider>
+    <SessionProvider session={session}>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        {children}
+      </ThemeProvider>
+    </SessionProvider>
   )
 }

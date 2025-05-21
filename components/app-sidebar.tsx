@@ -26,7 +26,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import type { SidebarData } from "@/types/navigation";
 
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  data: SidebarData;
+}
 
 const data = {
   user: {
@@ -37,97 +41,97 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/admin",  // Link to dashboard
+      url: "/admin", // Link to dashboard
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
           title: "Home",
-          url: "/admin",  // Link to dashboard home
+          url: "/admin", // Link to dashboard home
         },
         {
           title: "Analytics",
-          url: "/admin/analytics",  // Link to analytics page
+          url: "/admin/analytics", // Link to analytics page
         },
       ],
     },
     {
       title: "Posts",
-      url: "/admin/posts",  // Link to posts section
+      url: "/admin/posts", // Link to posts section
       icon: BookOpen,
       items: [
         {
           title: "All Posts",
-          url: "/admin/posts",  // Link to all posts
+          url: "/admin/posts", // Link to all posts
         },
         {
           title: "Add New",
-          url: "/admin/posts/add",  // Link to add new post
+          url: "/admin/posts/add", // Link to add new post
         },
         {
           title: "Categories",
-          url: "/admin/posts/categories",  // Link to categories page
+          url: "/admin/posts/categories", // Link to categories page
         },
         {
           title: "Tags",
-          url: "/admin/posts/tags",  // Link to tags page
+          url: "/admin/posts/tags", // Link to tags page
         },
       ],
     },
     {
       title: "Media",
-      url: "/admin/media",  // Link to media section
+      url: "/admin/media", // Link to media section
       icon: Bot,
       items: [
         {
           title: "Library",
-          url: "/admin/media/library",  // Link to media library
+          url: "/admin/media/library", // Link to media library
         },
         {
           title: "Add New",
-          url: "/admin/media/add",  // Link to add new media
+          url: "/admin/media/add", // Link to add new media
         },
       ],
     },
     {
       title: "Pages",
-      url: "/admin/pages",  // Link to pages section
+      url: "/admin/pages", // Link to pages section
       icon: Frame,
       items: [
         {
           title: "All Pages",
-          url: "/admin/pages",  // Link to all pages
+          url: "/admin/pages", // Link to all pages
         },
         {
           title: "Add New",
-          url: "/admin/pages/add",  // Link to add new page
+          url: "/admin/pages/add", // Link to add new page
         },
       ],
     },
     {
       title: "Settings",
-      url: "/admin/settings",  // Link to settings section
+      url: "/admin/settings", // Link to settings section
       icon: Settings2,
       items: [
         {
           title: "General",
-          url: "/admin/settings/general",  // Link to general settings
+          url: "/admin/settings/general", // Link to general settings
         },
         {
           title: "Writing",
-          url: "/admin/settings/writing",  // Link to writing settings
+          url: "/admin/settings/writing", // Link to writing settings
         },
         {
           title: "Reading",
-          url: "/admin/settings/reading",  // Link to reading settings
+          url: "/admin/settings/reading", // Link to reading settings
         },
         {
           title: "Media",
-          url: "/admin/settings/media",  // Link to media settings
+          url: "/admin/settings/media", // Link to media settings
         },
         {
           title: "Permalinks",
-          url: "/admin/settings/permalinks",  // Link to permalinks settings
+          url: "/admin/settings/permalinks", // Link to permalinks settings
         },
       ],
     },
@@ -135,18 +139,18 @@ const data = {
   navSecondary: [
     {
       title: "Support",
-      url: "/admin/support",  // Link to support page
+      url: "/admin/support", // Link to support page
       icon: LifeBuoy,
     },
     {
       title: "Feedback",
-      url: "/admin/feedback",  // Link to feedback page
+      url: "/admin/feedback", // Link to feedback page
       icon: Send,
     },
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ data, ...props }: AppSidebarProps) {
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>

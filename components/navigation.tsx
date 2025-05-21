@@ -6,137 +6,145 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Code2 } from 'lucide-react';
-
-import { useAuth } from '@payloadcms/ui'
-
-
-
+import { Menu, X } from 'lucide-react';
+import { Logo } from './ui/logo';
+import Image from 'next/image';
+import { GetStartedButton } from './forms/get-started-button';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { Container } from './ui/container';
+import { useSession } from "next-auth/react"
+import { signOut } from "next-auth/react"
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Designs', href: '/designs' },
+  { name: 'Portfolio', href: '/portfolio' },
   { name: 'Pricing', href: '/pricing' },
-  { name: 'Blog', href: '/posts' },
+  { name: 'Blog', href: '/blog' },
   { name: 'Contact', href: '/contact' },
 ];
 
-
 export function Navigation() {
   const pathname = usePathname();
-  const [user, setUser] = React.useState<{
-    id: string;
-    email: string;
-    name?: string;
-    image?: string;
-  } | null>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    // Directly fetch user data from your API
-    const fetchUser = async () => {
-      try {
-        const response = await fetch('/api/users/me'); // Replace with your actual API endpoint
-        if (!response.ok) throw new Error('Failed to fetch user');
-        const userData = await response.json();
-        setUser({
-          id: userData.user.id,
-          email: userData.user.email,
-          name: userData.user.name || 'Anonymous User',
-          image: userData.user.image || '/default-avatar.png', // Default avatar fallback
-        });
-      } catch (err) {
-        console.error('Error fetching user:', err);
-        setUser(null);
-      }
-    };
-
-    fetchUser();
-  }, []);
+  const { data: session, status } = useSession()
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false)
 
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        {/* Logo Section */}
-        <Link href="/" className="flex items-center space-x-2">
-          <Code2 className="h-6 w-6" />
-          <span className="font-bold">Jabin Web</span>
-        </Link>
+      <Container>
+        <div className=" flex h-16 items-center justify-between">
+          {/* Logo Section */}
+          <Logo />
 
-        {/* Navigation Links */}
-        <nav className="flex flex-1 items-center justify-center space-x-6">
-          {navigation.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'text-sm font-medium transition-colors hover:text-primary',
-                pathname === item.href
-                  ? 'text-foreground'
-                  : 'text-muted-foreground'
-              )}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </nav>
-
-        {/* User Profile and Theme Toggle */}
-        <div className="flex items-center space-x-4">
-          {user ? (
-            <div className="relative">
-              {/* Profile Button */}
-              <button
-                onClick={toggleDropdown}
-                className="flex items-center space-x-2"
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex flex-1 items-center justify-center space-x-6">
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'text-sm font-medium transition-colors hover:text-primary',
+                  pathname === item.href
+                    ? 'text-foreground'
+                    : 'text-muted-foreground'
+                )}
               >
-                <img
-                  src={user.image} // User profile image
-                  alt="User Profile"
-                  className="w-8 h-8 rounded-full"
-                />
-                <span>{user.name || user.email}</span>
-              </button>
+                {item.name}
+              </Link>
+            ))}
+          </nav>
 
-              {/* Dropdown Menu */}
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border">
-                  <div className="py-2 px-4 text-sm text-gray-700">
-                    <p className="mb-2">{user.email}</p>
-                    <Link href="/profile" className="block py-2">
-                      Profile
-                    </Link>
-                    <Link href="/admin" className="block py-2">
-                      Dashboard
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setUser(null);
-                        console.log('Sign out logic to be implemented');
-                      }}
-                      className="block w-full py-2 text-left text-red-500 hover:text-red-700"
-                    >
-                      Sign Out
-                    </button>
+          {/* Mobile and Desktop Actions Group */}
+          <div className="flex items-center space-x-2">
+            <ThemeToggle />
+            
+            {status === "loading" ? (
+              <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+            ) : session?.user ? (
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  onClick={toggleDropdown}
+                  className="flex items-center space-x-2 px-2"
+                >
+                  <Image
+                    src={session.user.image || '/default-avatar.png'}
+                    alt={session.user.name || 'User Profile'}
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <span className="hidden md:inline">{session.user.name}</span>
+                </Button>
+                
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg border shadow-lg">
+                    <div className="py-2 px-4 text-sm">
+                      <div className="mb-2 text-muted-foreground">{session.user.email}</div>
+                      <Link href="/profile" className="block py-2 hover:text-primary">
+                        Profile
+                      </Link>
+                      {session.user.role === 'admin' && (
+                        <Link href="/admin" className="block py-2 hover:text-primary">
+                          Dashboard
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => signOut()}
+                        className="block w-full py-2 text-left text-red-500 hover:text-red-700"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">Please sign in</div>
-          )}
+                )}
+              </div>
+            ) : (
+              <div className="hidden md:flex space-x-2">
+                <Button variant="ghost" asChild>
+                  <Link href="/login">Sign In</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/register">Get Started</Link>
+                </Button>
+              </div>
+            )}
 
-          {/* Theme Toggle */}
-          <ThemeToggle />
-
-          {/* Get Started Button */}
-          <Button asChild>
-            <Link href="/contact">Get Started</Link>
-          </Button>
+            {/* Mobile Menu - Show only on mobile */}
+            <Sheet>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="icon" className="ml-1">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <nav className="flex flex-col space-y-4 mt-8">
+                  {navigation.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        'text-base font-medium transition-colors hover:text-primary px-2 py-1 rounded-md',
+                        pathname === item.href
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground'
+                      )}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
-      </div>
+      </Container>
     </header>
   );
 }

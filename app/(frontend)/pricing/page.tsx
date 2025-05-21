@@ -1,82 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { PricingCard } from '@/components/pricing-card';
 
-// Define types for plans, pricing, and currencies
-interface Price {
-  setup: number;
-  maintenance: number;
-}
-
-
-interface Plan {
-  name: string;
-  description: string;
-  features: string[];
-  price: Price;
-  buttonColor: string;
-  popular?: boolean;
-  currencySymbol?: string;
-}
-
-interface CurrencyRate {
-  symbol: string;
-  rate: number;
-}
-
-const plans: Plan[] = [
-  {
-    name: 'Starter',
-    description: 'Choose if you just want your online presence',
-    features: [
-      "1,000 MB file storage", "Email and Chat support", "Homepage, Contact Form", "SEO Optimization, Responsive Design", 
-      "Free Domain*", "Readymade Templates", "Contact Form", "Social Media Integration", "Image Gallery"
-    ],
-    price: { setup: 4999, maintenance: 499 },
-    buttonColor: 'gray-500',
-  },
-  {
-    name: 'Pro',
-    description: 'Recommended for small websites',
-    features: [
-      "10GB file storage", "Email and chat support", "E-commerce Integration, Blogging Platform", "SSL Certificate, Analytics Integration",
-      "Free Domain*", "10-15 Pages", "Readymade Templates", "SEO Tools", "Payment Integration", "Contact Forms", 
-      "Social Media Integration", "Image Gallery", "Video Integration", "Newsletter Signup", "Advanced Security", 
-      "Content Management", "Events Calendar"
-    ],
-    price: { setup: 24999, maintenance: 1499 },
-    buttonColor: 'indigo-500',
-    popular: true, // Marking this as a recommended plan
-  },
-  {
-    name: 'Advanced',
-    description: 'For large custom websites',
-    features: [
-      "Unlimited file storage", "Dedicated support", "Custom Features", "Customizable Templates, CRM Integration", 
-      "Free Domain", "Unlimited Pages", "E-commerce", "Blogging", "SEO Tools", "Advanced Analytics", "Payment Integration", 
-      "SSL Certificate", "Contact Forms", "Social Media Integration", "Image Gallery", "Video Integration", "Newsletter Signup", 
-      "Advanced Security", "Content Management", "Events Calendar", "Multi-language Support"
-    ],
-    price: { setup: 49999, maintenance: 4999 },
-    buttonColor: 'gray-500',
-  },
-];
-
-const currencyRates: Record<string, CurrencyRate> = {
-  INR: { symbol: '₹', rate: 1 },
-  USD: { symbol: '$', rate: 0.012 },
-  AED: { symbol: 'AED', rate: 0.044 },
-  GBP: { symbol: '£', rate: 0.01 },
-};
-
-// Define types for the state variables
 interface UserCountryData {
   country: string;
 }
+import { PricingCard } from '@/components/pricing/pricing-card';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Globe, Palette, Search, Smartphone } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { servicePricing, currencyRates } from '@/config/pricing-data'
+import { PricingComparison } from "@/components/pricing/pricing-comparison"
 
 export default function PricingPage() {
-  const [currency, setCurrency] = useState<string>('INR');
+  const [activeService, setActiveService] = useState('website');
+  const [currency, setCurrency] = useState<keyof typeof currencyRates>('INR');
+  const [isYearly, setIsYearly] = useState(false);
   const [userCountry, setUserCountry] = useState<string>('');
 
   useEffect(() => {
@@ -90,78 +30,151 @@ export default function PricingPage() {
           AE: 'AED',
           GB: 'GBP',
         };
-        setCurrency(countryCurrency[data.country] || 'USD');
+        setCurrency((countryCurrency[data.country] || 'USD') as keyof typeof currencyRates);
         setUserCountry(data.country);
       })
       .catch(() => setCurrency('USD')); 
   }, []);
 
-  // Map plans to converted prices and ensure the price stays a number
-  const convertedPlans: Plan[] = plans.map((plan) => ({
+  const convertedPlans = servicePricing[activeService].map((plan) => ({
     ...plan,
     price: {
-      setup: plan.price.setup * (currencyRates[currency]?.rate || 1), 
-      maintenance: plan.price.maintenance * (currencyRates[currency]?.rate || 1), 
+      setup: plan.price[isYearly ? 'yearly' : 'monthly'].setup * (currencyRates[currency]?.rate || 1),
+      maintenance: plan.price[isYearly ? 'yearly' : 'monthly'].maintenance * (currencyRates[currency]?.rate || 1),
     },
     currencySymbol: currencyRates[currency]?.symbol,
   }));
 
   return (
-    <div className="container py-24">
-      <div className="mx-auto max-w-3xl text-center">
-        <h1 className="mb-4 text-4xl font-bold">Simple, Transparent Pricing</h1>
-        <p className="mb-12 text-lg text-muted-foreground">
-          Choose the perfect plan for your business needs. All plans include our
-          core features with different levels of support and customization.
+    <div className="container py-12 md:py-24">
+      <div className="mx-auto max-w-3xl text-center px-4">
+        <h1 className="mb-4 text-3xl md:text-4xl font-bold">Our Services & Pricing</h1>
+        <p className="mb-8 md:mb-12 text-base md:text-lg text-muted-foreground">
+          Transparent pricing for all your digital needs. Choose a service to see detailed pricing options.
         </p>
       </div>
-      <div className="text-end mb-4">
-        <select
-          className="border border-gray-300 rounded px-4 py-2"
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-        >
-          {Object.keys(currencyRates).map((cur) => (
-            <option key={cur} value={cur}>
-              {cur}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="grid gap-8 md:grid-cols-3">
-        {convertedPlans.map((plan, index) => (
-          <div
-            key={plan.name}
-            className={`relative ${plan.popular ? 'bg-yellow-100 border-2 border-blue-500 rounded-lg self-start' : ''}`}
-          >
-           <PricingCard
-              title={plan.name}
-              description={plan.description}
-              features={plan.features}
-              price={
-                <>
-                  <span className="text-3xl font-bold">{plan.currencySymbol}{plan.price.setup.toFixed(2)}</span>
-                  <span className="text-sm text-muted-foreground"> Setup</span>
-                  <br />
-                </>
-              }
-              monthly={
-                  <span className="text-xl">{plan.currencySymbol}{plan.price.maintenance.toFixed(2)}</span>
-              }
-              buttonColor={plan.buttonColor}
+
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-8 px-4">
+        <Tabs defaultValue="website" className="w-full md:w-auto" onValueChange={setActiveService}>
+          <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 bg-transparent w-full">
+            <TabsTrigger value="website" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Globe className="mr-2 h-4 w-4" />
+              Website Design
+            </TabsTrigger>
+            <TabsTrigger value="branding" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Palette className="mr-2 h-4 w-4" />
+              Logo & Branding
+            </TabsTrigger>
+            <TabsTrigger value="seo" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Search className="mr-2 h-4 w-4" />
+              SEO & Marketing
+            </TabsTrigger>
+            <TabsTrigger value="app" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Smartphone className="mr-2 h-4 w-4" />
+              App Development
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="billing-toggle"
+              checked={isYearly}
+              onCheckedChange={setIsYearly}
             />
-            {plan.popular && (
-              <div className="absolute top-0 right-0 bg-blue-500 text-white px-4 py-2 rounded-tr-lg text-sm">
-                Recommended
-              </div>
-            )}
+            <Label htmlFor="billing-toggle" className="whitespace-nowrap text-sm md:text-base">
+              Bill {isYearly ? 'Yearly' : 'Monthly'}
+              {isYearly && <span className="ml-2 text-sm text-primary">Save 10%</span>}
+            </Label>
           </div>
-        ))}
+
+          <select
+            className="border border-input rounded-md px-3 py-2 text-sm w-full sm:w-auto"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as keyof typeof currencyRates)}
+          >
+            {Object.keys(currencyRates).map((cur) => (
+              <option key={cur} value={cur}>
+                {cur}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
-      <div className="mt-16 text-center">
-        <p className="text-muted-foreground">
+
+      {/* Mobile view: Cards */}
+      <div className="block lg:hidden px-4">
+        <div className="grid gap-6 sm:gap-8">
+          {convertedPlans.map((plan, index) => (
+            <div
+              key={plan.name}
+              className={`relative ${
+                plan.popular 
+                  ? 'scale-105 shadow-xl border-2 border-primary rounded-xl' 
+                  : 'hover:scale-102 transition-transform duration-300'
+              }`}
+            >
+              <PricingCard
+                title={plan.name}
+                description={plan.description}
+                features={plan.features}
+                price={
+                  <div className="space-y-2">
+                    <div className="flex items-baseline justify-center gap-2">
+                      <span className="text-3xl font-bold">
+                        {plan.currencySymbol}{Math.floor(plan.price.setup)}
+                      </span>
+                      <span className="text-sm text-muted-foreground">setup</span>
+                    </div>
+                    {plan.price.maintenance > 0 && (
+                      <>
+                        <div className='flex justify-center !m-0 text-base'>+</div>
+                        <div className="flex items-baseline justify-center !mt-0">
+                          <span className="text-xl font-medium">
+                            {plan.currencySymbol}{Math.floor(plan.price.maintenance)}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            /{isYearly ? 'year' : 'month'}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                }
+                monthly={
+                  plan.price.maintenance > 0
+                    ? `${plan.currencySymbol}${Math.floor(plan.price.maintenance)}/${isYearly ? 'year' : 'month'}`
+                    : ''
+                }
+                buttonColor={plan.buttonColor}
+              />
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+                  Most Popular
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop view: Comparison Table */}
+      <div className="hidden lg:block">
+        <PricingComparison 
+          tiers={convertedPlans}
+          isYearly={isYearly}
+          currencySymbol={currencyRates[currency].symbol}
+        />
+      </div>
+
+      <div className="mt-12 md:mt-16 text-center space-y-4 px-4">
+        <p className="text-sm md:text-base text-muted-foreground">
+          * Domain registration is free for the first year with annual plans
+        </p>
+        <p className="text-base md:text-lg">
           Need a custom solution?{' '}
-          <a href="/contact" className="text-primary hover:underline">
+          <a href="/contact" className="text-primary hover:underline font-medium">
             Contact us
           </a>{' '}
           for a tailored package that meets your specific requirements.

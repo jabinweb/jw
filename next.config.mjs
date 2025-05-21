@@ -1,15 +1,50 @@
-import { withPayload } from '@payloadcms/next/withPayload'
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Your Next.js config here
-  experimental: {
-    reactCompiler: false,
-  },
+  output: 'standalone',
   images: {
-    domains: ['localhost', 'your-payload-cms-domain.com'], // Add localhost here
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'source.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.worldvectorlogo.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pytorch.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.vectorlogo.zone',
+      },
+      {
+        protocol: 'https',
+        hostname: 'jabin-screenshot-api.vercel.app',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn-icons-png.flaticon.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**', // Consider restricting this to specific domains in production
+      },
+    ],
   },
 }
 
-// Wrap your `nextConfig` with the `withPayload` plugin
-export default withPayload(nextConfig)
+export default nextConfig
