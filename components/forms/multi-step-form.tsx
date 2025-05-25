@@ -71,15 +71,28 @@ export function MultiStepForm({ onComplete }: MultiStepFormProps) {
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      // Here you would typically send the data to your API
-      console.log(data)
-      
+      const response = await fetch('/api/forms/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          formName: 'get-started-form',
+          data: {
+            ...data,
+            submittedAt: new Date().toISOString()
+          }
+        })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Failed to submit form')
+      }
+
       toast({
         title: "Success!",
         description: "Thank you for your interest. We'll be in touch soon!",
       })
 
-      // Call onComplete callback instead of redirecting
       if (onComplete) {
         setTimeout(onComplete, 2000)
       }

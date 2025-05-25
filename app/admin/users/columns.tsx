@@ -2,15 +2,9 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import { ArrowUpDown, MoreHorizontal, Check, X } from "lucide-react"
+import { ArrowUpDown, Check, X } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { UserActions } from "./user-actions"
 
 export type User = {
   id: string
@@ -39,22 +33,22 @@ export const columns: ColumnDef<User>[] = [
     },
     cell: ({ row }) => {
       const name = row.getValue("name") as string
-      const email = row.getValue("email") as string
+      const email = row.original.email // Access email from row.original instead of getValue
       const image = row.original.image
-      
+
       return (
         <div className="flex items-center gap-3">
           <Avatar>
             <AvatarImage src={image} />
-            <AvatarFallback>{name[0]}</AvatarFallback>
+            <AvatarFallback>{name?.[0] || "?"}</AvatarFallback>
           </Avatar>
           <div>
-            <div className="font-medium">{name}</div>
+            <div className="font-medium">{name || "Unnamed User"}</div>
             <div className="text-sm text-muted-foreground">{email}</div>
           </div>
         </div>
       )
-    }
+    },
   },
   {
     accessorKey: "role",
@@ -75,7 +69,7 @@ export const columns: ColumnDef<User>[] = [
           <span>{isActive ? "Active" : "Inactive"}</span>
         </div>
       )
-    }
+    },
   },
   {
     accessorKey: "lastLogin",
@@ -83,31 +77,13 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ row }) => {
       const date = row.getValue("lastLogin")
       return date ? new Date(date as string).toLocaleDateString() : "Never"
-    }
+    },
   },
   {
     id: "actions",
     cell: ({ row }) => {
       const user = row.original
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>Edit User</DropdownMenuItem>
-            <DropdownMenuItem>Change Role</DropdownMenuItem>
-            <DropdownMenuItem>Reset Password</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">
-              {user.isActive ? "Deactivate" : "Activate"}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-  },
+      return <UserActions user={user} />
+    }
+  }
 ]

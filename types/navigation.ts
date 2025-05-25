@@ -1,11 +1,24 @@
-import { LucideIcon } from "lucide-react"
+export type IconName = 
+  | "dashboard"
+  | "posts"
+  | "services"
+  | "users"
+  | "settings"
+  | "messages"
+  | "support"
+  | "help"
+  | "globe"
+  | "file-text"
+  | "mail"
+  | "forms" 
+  | "image"
 
 export interface NavItem {
-  title: string
-  url: string
-  icon: LucideIcon
-  isActive?: boolean
-  items?: SubNavItem[]
+  title: string;
+  url: string;
+  iconName: IconName;
+  isActive?: boolean;
+  items?: { title: string; url: string; }[];
 }
 
 export interface SubNavItem {
@@ -26,6 +39,6 @@ export interface SidebarData {
     email: string
     avatar: string
   }
-  navMain: MainNavItem[]
-  navSecondary: SecondaryNavItem[]
+  navMain: NavItem[]
+  navSecondary: NavItem[]
 }

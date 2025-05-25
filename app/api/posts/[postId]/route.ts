@@ -51,15 +51,36 @@ export async function GET(req: Request, { params }: { params: { postId: string }
     }
 
     const post = await db.post.findUnique({
-      where: { id: params.postId }
+      where: { id: params.postId },
+      include: {
+        author: {
+          select: { name: true, image: true }
+        }
+      }
     })
 
     if (!post) {
       return NextResponse.json({ error: "Not found" }, { status: 404 })
     }
 
-    return NextResponse.json(post)
+    // Parse content if it's stored as a JSON string
+    let parsedContent = post.content;
+    if (typeof post.content === 'string') {
+      try {
+        // Try to parse as JSON (for backwards compatibility)
+        parsedContent = JSON.parse(post.content);
+      } catch (e) {
+        // If it fails, it's probably already HTML, so keep it as is
+        parsedContent = post.content;
+      }
+    }
+
+    return NextResponse.json({
+      ...post,
+      content: parsedContent
+    })
   } catch (error) {
+    console.error('[GET] Error fetching post:', error)
     return NextResponse.json({ error: "Failed to fetch" }, { status: 500 })
   }
 }

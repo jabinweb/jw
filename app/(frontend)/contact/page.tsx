@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { ContactForm } from "@/components/forms/contact-form";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,25 +12,6 @@ import { ArrowRight, Globe2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ContactPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    toast({
-      title: 'Message sent!',
-      description: 'We\'ll get back to you as soon as possible.',
-    });
-
-    setIsSubmitting(false);
-    (e.target as HTMLFormElement).reset();
-  };
-
   return (
     <div className="container py-24">
       {/* Header Section */}
@@ -94,42 +75,14 @@ export default function ContactPage() {
       </div>
 
       <div className="grid gap-12 md:grid-cols-2">
-        {/* Contact Form */}
+        {/* Replace existing form with new ContactForm component */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
         >
           <Card className="p-6">
             <h2 className="text-2xl font-semibold mb-6">Send us a Message</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium">Name</label>
-                  <Input id="name" required placeholder="John Doe" />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium">Email</label>
-                  <Input id="email" type="email" required placeholder="john@example.com" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="subject" className="text-sm font-medium">Subject</label>
-                <Input id="subject" required placeholder="How can we help?" />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="message" className="text-sm font-medium">Message</label>
-                <Textarea 
-                  id="message" 
-                  required 
-                  className="min-h-[150px]"
-                  placeholder="Tell us about your project..."
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Sending...' : 'Send Message'} 
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </form>
+            <ContactForm />
           </Card>
         </motion.div>
 
@@ -157,5 +110,5 @@ export default function ContactPage() {
         </motion.div>
       </div>
     </div>
-  );
+  )
 }

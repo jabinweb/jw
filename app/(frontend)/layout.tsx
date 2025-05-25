@@ -1,9 +1,10 @@
 import '../globals.css'
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { Navigation } from '@/components/navigation';
-import { Footer } from '@/components/footer';
+import { Footer } from '@/components/layout/footer';
 import { Toaster } from '@/components/ui/toaster';
+import { SiteHeader } from '@/components/layout/site-header';
+import { PWAInstallPrompt } from '@/components/pwa/install-prompt'
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -20,9 +21,11 @@ export default function FrontendLayout({
 }) {
   return (
     <>
-      <Navigation />
-      {children}
+      <SiteHeader />
+      <main>{children}</main>
       <Footer />
+      <PWAInstallPrompt />
+      <Toaster />
     </>
   )
 }

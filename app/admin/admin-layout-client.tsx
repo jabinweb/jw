@@ -19,7 +19,7 @@ export function AdminLayoutClient({ children, sidebarData, session }: AdminLayou
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <SidebarProvider>
         <div className="relative min-h-screen">
-          <div className="fixed inset-0 bg-zinc-900/50" />
+          {/* <div className="fixed inset-0 bg-zinc-900/50" /> */}
           <AppSidebar className="border-r" data={sidebarData} />
           <div className="ml-[var(--sidebar-width)] transition-[margin]">
             <main className="p-8">      

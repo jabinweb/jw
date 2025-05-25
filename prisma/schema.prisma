@@ -14,16 +14,19 @@ enum UserRole {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          UserRole  @default(user)
-  posts         Post[]
-  accounts      Account[]
-  sessions      Session[]
+  id             String           @id @default(cuid())
+  name           String?
+  email          String?          @unique
+  emailVerified  DateTime?
+  image          String?
+  password       String?
+  role           UserRole         @default(user)
+  posts          Post[]
+  accounts       Account[]
+  sessions       Session[]
+  formEntries    FormEntry[]
+  projects       Project[]
+  media          Media[]
 }
 
 // Service model
@@ -40,21 +43,24 @@ model Service {
 
 // Blog Post model
 model Post {
-  id            String      @id @default(cuid())
+  id            String     @id @default(cuid())
   title         String
-  slug          String      @unique
-  excerpt       String?     @db.Text
-  content       Json        @db.JsonB
+  slug          String     @unique
+  excerpt       String?    @db.Text
+  content       Json       @db.JsonB
   featuredImage String?
-  status        PostStatus  @default(draft)
+  status        PostStatus @default(draft)
   authorId      String
-  author        User        @relation(fields: [authorId], references: [id])
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  author        User       @relation(fields: [authorId], references: [id])
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   publishedAt   DateTime?
-  metadata      Json?       @db.JsonB  // Change to JsonB for better JSON handling
+  metadata      Json?      @db.JsonB
 
   @@index([authorId])
+  @@index([title]) // Add index for better search performance
+  @@index([publishedAt])
+  @@index([status])
 }
 
 enum PostStatus {
@@ -62,14 +68,36 @@ enum PostStatus {
   published
 }
 
-// Contact form submissions
-model Contact {
+// Remove Contact and GetStarted models and add Forms system
+model Form {
+  id          String      @id @default(cuid())
+  name        String // e.g., "contact", "get-started"
+  title       String // Display title
+  description String?
+  fields      Json // Field definitions
+  status      String      @default("active") // active, disabled
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  entries     FormEntry[]
+
+  @@index([name])
+}
+
+model FormEntry {
   id        String   @id @default(cuid())
-  name      String
-  email     String
-  subject   String
-  message   String
+  formId    String
+  data      Json     @db.JsonB // Actual form submission data
+  status    String   @default("new")
+  metadata  Json?    @db.JsonB // Additional metadata like IP, user agent
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String? // Optional relation to user if logged in
+  form      Form     @relation(fields: [formId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([formId])
+  @@index([status])
+  @@index([userId])
 }
 
 model Account {
@@ -108,4 +136,55 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+enum ProjectStatus {
+  draft
+  active
+  completed
+  archived
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  description String?       @db.Text
+  content     Json?         @db.JsonB
+  status      ProjectStatus @default(draft)
+  featured    Boolean       @default(false)
+  clientId    String        
+  client      User          @relation(fields: [clientId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  startDate   DateTime?
+  endDate     DateTime?
+  coverImage  String?
+  images      String[]
+  category    String?
+  tags        String[]
+  metadata    Json?         @db.JsonB
+
+  @@index([clientId])
+  @@index([status])
+  @@index([featured])
+  @@index([title]) // Add index for better search performance
+  @@index([category])
+  @@index([tags])
+}
+
+// Media model for uploaded files
+model Media {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  name       String
+  key        String   @unique
+  url        String
+  size       Int
+  type       String
+  uploadedAt DateTime @default(now())
+  metadata   Json?    @db.JsonB
+
+  @@index([userId])
 }

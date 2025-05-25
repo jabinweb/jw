@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from 'lucide-react';
-import { Logo } from './ui/logo';
-import { Container } from './ui/container';
+import { Logo } from '../ui/logo';
+import { Container } from '../ui/container';
 
 export function Footer() {
   return (
@@ -14,7 +14,7 @@ export function Footer() {
         <div className="py-16">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
             {/* Branding & Description */}
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-3 space-y-6">
               <Logo />
               <p className="text-sm text-muted-foreground max-w-sm">
                 Creating exceptional digital experiences through innovative web solutions. We transform ideas into powerful digital realities.
@@ -89,8 +89,30 @@ export function Footer() {
               </ul>
             </div>
 
+            {/* Legal Menu */}
+            <div className="lg:col-span-2 space-y-6">
+              <h4 className="text-base font-semibold">Legal</h4>
+              <ul className="space-y-3 text-sm">
+                <li>
+                  <Link href="/legal/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/legal/terms" className="text-muted-foreground hover:text-foreground transition-colors">
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/legal/cookie-policy" className="text-muted-foreground hover:text-foreground transition-colors">
+                    Cookie Policy
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
             {/* Contact & Newsletter */}
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-3 space-y-6">
               <h4 className="text-base font-semibold">Stay Updated</h4>
               <p className="text-sm text-muted-foreground">
                 Subscribe to our newsletter for digital insights and updates.
@@ -103,17 +125,6 @@ export function Footer() {
                 />
                 <Button type="submit">Subscribe</Button>
               </form>
-              {/* <div className="space-y-3 text-sm text-muted-foreground">
-                <p className="flex items-center">
-                  <Mail className="mr-2 h-4 w-4" /> hello@jabinweb.com
-                </p>
-                <p className="flex items-center">
-                  <Phone className="mr-2 h-4 w-4" /> (555) 123-4567
-                </p>
-                <p className="flex items-center">
-                  <MapPin className="mr-2 h-4 w-4" /> New York, NY 10001
-                </p>
-              </div> */}
             </div>
           </div>
 

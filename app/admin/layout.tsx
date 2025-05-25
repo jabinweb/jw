@@ -1,18 +1,6 @@
 import '../globals.css'
 import { Inter } from 'next/font/google';
-import {
-  LayoutDashboard,
-  FileText,
-  Settings,
-  Users,
-  Globe,
-  Mail,
-  HeadphonesIcon,
-  HelpCircle
-} from "lucide-react"
 import type { SidebarData } from "@/types/navigation"
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { useSession } from "next-auth/react"
 import { auth } from "@/auth"
 import { AdminLayoutClient } from "./admin-layout-client"
 
@@ -29,7 +17,7 @@ function getSidebarData(user: any): SidebarData {
       {
         title: "Dashboard",
         url: "/admin",
-        icon: LayoutDashboard,
+        iconName: "dashboard",
         isActive: true,
         items: [
           { title: "Overview", url: "/admin" },
@@ -37,9 +25,28 @@ function getSidebarData(user: any): SidebarData {
         ],
       },
       {
+        title: "Forms",
+        url: "/admin/forms",
+        iconName: "forms",
+        items: [
+          { title: "All Forms", url: "/admin/forms" },
+          { title: "Form Responses", url: "/admin/forms/responses" },
+          { title: "Create Form", url: "/admin/forms/new" },
+        ],
+      },
+      {
+        title: "Media",
+        url: "/admin/media",
+        iconName: "image",
+        items: [
+          { title: "Media Library", url: "/admin/media" },
+          { title: "Upload Media", url: "/admin/media/upload" },
+        ],
+      },
+      {
         title: "Services",
         url: "/admin/services",
-        icon: Globe,
+        iconName: "services",
         items: [
           { title: "All Services", url: "/admin/services" },
           { title: "Add New", url: "/admin/services/new" },
@@ -48,7 +55,7 @@ function getSidebarData(user: any): SidebarData {
       {
         title: "Blog Posts",
         url: "/admin/posts",
-        icon: FileText,
+        iconName: "posts",
         items: [
           { title: "All Posts", url: "/admin/posts" },
           { title: "Add New", url: "/admin/posts/new" },
@@ -57,17 +64,17 @@ function getSidebarData(user: any): SidebarData {
       {
         title: "Messages",
         url: "/admin/messages",
-        icon: Mail,
+        iconName: "messages",
       },
       {
         title: "Users",
         url: "/admin/users",
-        icon: Users,
+        iconName: "users",
       },
       {
         title: "Settings",
         url: "/admin/settings",
-        icon: Settings,
+        iconName: "settings",
         items: [
           { title: "General", url: "/admin/settings" },
           { title: "Appearance", url: "/admin/settings/appearance" },
@@ -75,18 +82,7 @@ function getSidebarData(user: any): SidebarData {
         ],
       },
     ],
-    navSecondary: [
-      {
-        title: "Support",
-        url: "/admin/support",
-        icon: HeadphonesIcon,
-      },
-      {
-        title: "Help",
-        url: "/admin/help",
-        icon: HelpCircle,
-      },
-    ],
+    navSecondary: [],
   }
 }
 

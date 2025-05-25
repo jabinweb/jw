@@ -1,5 +1,4 @@
 import { db } from "@/lib/db"
-import { type PostContent } from "@/types/post"
 
 async function withRetry<T>(
   operation: () => Promise<T>, 
@@ -22,36 +21,7 @@ async function withRetry<T>(
   throw lastError
 }
 
-function convertToStructuredContent(rawContent: any): PostContent {
-  // If content is already properly structured
-  if (Array.isArray(rawContent) && 
-      rawContent.length > 0 && 
-      rawContent[0].type === 'paragraph') {
-    return rawContent
-  }
-
-  // If content is JSON string, try to parse
-  if (typeof rawContent === 'string') {
-    try {
-      const parsed = JSON.parse(rawContent)
-      if (Array.isArray(parsed)) {
-        return parsed
-      }
-    } catch {
-      // If parsing fails, treat as plain text
-    }
-  }
-
-  // Convert to structured format
-  return [{
-    type: 'paragraph',
-    content: [{
-      type: 'text',
-      text: String(rawContent || ''),
-      marks: []
-    }]
-  }]
-}
+// Remove the convertToStructuredContent function as we're using HTML now
 
 export async function getPublishedPosts() {
   return withRetry(async () => {
@@ -75,7 +45,8 @@ export async function getPublishedPosts() {
 
     return posts.map(post => ({
       ...post,
-      content: convertToStructuredContent(post.content)
+      // No conversion needed since content is already stored as HTML
+      content: post.content
     }))
   })
 }
@@ -102,7 +73,70 @@ export async function getPublishedPost(slug: string) {
 
     return {
       ...post,
-      content: convertToStructuredContent(post.content)
+      // No conversion needed since content is already stored as HTML
+      content: post.content
+    }
+  })
+}
+
+// Add a new function to fetch adjacent posts
+export async function getAdjacentPosts(slug: string) {
+  return withRetry(async () => {
+    // First get the current post to find its publishedAt date
+    const currentPost = await db.post.findUnique({
+      where: {
+        slug,
+        status: "published",
+        publishedAt: { not: null }
+      },
+      select: {
+        publishedAt: true
+      }
+    })
+
+    if (!currentPost || !currentPost.publishedAt) return { previousPost: null, nextPost: null }
+
+    // Get the previous post (published before the current one)
+    const previousPost = await db.post.findFirst({
+      where: {
+        status: "published",
+        publishedAt: { 
+          lt: currentPost.publishedAt, // Now we know publishedAt is not null
+          not: null
+        }
+      },
+      orderBy: {
+        publishedAt: "desc"
+      },
+      select: {
+        title: true,
+        slug: true,
+        featuredImage: true
+      }
+    })
+
+    // Get the next post (published after the current one)
+    const nextPost = await db.post.findFirst({
+      where: {
+        status: "published",
+        publishedAt: { 
+          gt: currentPost.publishedAt, // Now we know publishedAt is not null
+          not: null
+        }
+      },
+      orderBy: {
+        publishedAt: "asc"
+      },
+      select: {
+        title: true,
+        slug: true,
+        featuredImage: true
+      }
+    })
+
+    return {
+      previousPost,
+      nextPost
     }
   })
 }

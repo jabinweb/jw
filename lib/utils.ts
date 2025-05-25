@@ -20,3 +20,9 @@ export function slugify(text: string) {
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '')
 }
+
+export function generateFieldName(type: string, label?: string): string {
+  const base = label ? slugify(label) : `field_${type}`
+  const timestamp = Date.now().toString(36)
+  return `${base}_${timestamp}`
+}

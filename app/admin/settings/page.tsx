@@ -1,29 +1,45 @@
 // pages/admin/settings/index.tsx
-import Link from 'next/link';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card } from "@/components/ui/card"
+import { SiteSettingsForm } from "@/components/admin/settings/site-settings-form"
+import { SeoSettingsForm } from "@/components/admin/settings/seo-settings-form"
+import { SocialSettingsForm } from "@/components/admin/settings/social-settings-form"
 
-const SettingsPage = () => {
+export default function SettingsPage() {
   return (
-    <div>
-      <h1>Settings</h1>
-      <ul>
-        <li>
-          <Link href="/admin/settings/general">General Settings</Link>
-        </li>
-        <li>
-          <Link href="/admin/settings/writing">Writing Settings</Link>
-        </li>
-        <li>
-          <Link href="/admin/settings/reading">Reading Settings</Link>
-        </li>
-        <li>
-          <Link href="/admin/settings/media">Media Settings</Link>
-        </li>
-        <li>
-          <Link href="/admin/settings/permalinks">Permalinks Settings</Link>
-        </li>
-      </ul>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Settings</h1>
+        <p className="text-muted-foreground">
+          Manage your site settings and configuration
+        </p>
+      </div>
+      
+      <Tabs defaultValue="general" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="seo">SEO</TabsTrigger>
+          <TabsTrigger value="social">Social Media</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="general">
+          <Card className="p-6">
+            <SiteSettingsForm />
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="seo">
+          <Card className="p-6">
+            <SeoSettingsForm />
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="social">
+          <Card className="p-6">
+            <SocialSettingsForm />
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
-  );
-};
-
-export default SettingsPage;
+  )
+}

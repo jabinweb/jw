@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form"
 import { toast } from "@/hooks/use-toast"
 import { slugify } from "@/lib/utils"
+import { RichTextEditor } from "@/components/editor/rich-text-editor"
 import * as z from "zod"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Image from "next/image"
-import { useImperativeHandle, forwardRef } from "react"
+import { useImperativeHandle, forwardRef, useState, useEffect } from "react"
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -34,18 +34,40 @@ export type PostFormRef = {
 }
 
 export const PostForm = forwardRef<PostFormRef, PostFormProps>(({ defaultValues, onSubmit }, ref) => {
+  const [initialContent, setInitialContent] = useState('')
+  
+  useEffect(() => {
+    // Ensure content is properly handled whether it's a string or an object
+    if (defaultValues?.content) {
+      // If content is already a string, use it directly
+      if (typeof defaultValues.content === 'string') {
+        setInitialContent(defaultValues.content)
+      }
+      // If it's JSON object (from older posts), convert to string
+      else if (typeof defaultValues.content === 'object') {
+        setInitialContent(JSON.stringify(defaultValues.content))
+      }
+    }
+  }, [defaultValues])
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      slug: "",
-      status: "draft",
-      ...defaultValues,
+      title: defaultValues?.title || "",
+      slug: defaultValues?.slug || "",
+      status: defaultValues?.status || "draft",
       excerpt: defaultValues?.excerpt || "",
       featuredImage: defaultValues?.featuredImage || "",
-      content: defaultValues?.content || ""
+      content: initialContent || ""
     }
   })
+  
+  // Update form values when initialContent changes
+  useEffect(() => {
+    if (initialContent) {
+      form.setValue("content", initialContent)
+    }
+  }, [initialContent, form])
 
   // Expose form instance to parent
   useImperativeHandle(ref, () => ({
@@ -125,10 +147,12 @@ export const PostForm = forwardRef<PostFormRef, PostFormProps>(({ defaultValues,
             <FormItem>
               <FormLabel>Content</FormLabel>
               <FormControl>
-                <Textarea 
-                  {...field}
-                  value={field.value || ''} // Ensure value is never null
-                  className="min-h-[300px]" 
+                <RichTextEditor
+                  content={field.value || ''}
+                  onChange={(html) => {
+                    field.onChange(html)
+                  }}
+                  placeholder="Write your post content here..."
                 />
               </FormControl>
             </FormItem>
@@ -176,8 +200,6 @@ export const PostForm = forwardRef<PostFormRef, PostFormProps>(({ defaultValues,
             </FormItem>
           )}
         />
-
-        {/* Remove status field and submit buttons since they're in the sidebar now */}
       </form>
     </Form>
   )

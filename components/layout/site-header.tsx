@@ -6,16 +6,17 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Menu, X } from 'lucide-react';
-import { Logo } from './ui/logo';
+import { Menu, X, Search } from 'lucide-react';
+import { Logo } from '../ui/logo';
 import Image from 'next/image';
-import { GetStartedButton } from './forms/get-started-button';
+import { GlobalSearch } from "@/components/search/global-search"
+import { AISearch } from "@/components/search/ai-search"
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { Container } from './ui/container';
+import { Container } from '../ui/container';
 import { useSession } from "next-auth/react"
 import { signOut } from "next-auth/react"
 
@@ -27,7 +28,7 @@ const navigation = [
   { name: 'Contact', href: '/contact' },
 ];
 
-export function Navigation() {
+export function SiteHeader() {
   const pathname = usePathname();
   const { data: session, status } = useSession()
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false)
@@ -37,7 +38,7 @@ export function Navigation() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <Container>
-        <div className=" flex h-16 items-center justify-between">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo Section */}
           <Logo />
 
@@ -61,6 +62,19 @@ export function Navigation() {
 
           {/* Mobile and Desktop Actions Group */}
           <div className="flex items-center space-x-2">
+            {/* Global Search - Desktop */}
+            <div className="hidden md:block w-[200px] lg:w-[300px]">
+              <GlobalSearch variant="input" />
+            </div>
+            
+            {/* Global Search - Mobile (Icon Only) */}
+            <div className="md:hidden">
+              <GlobalSearch variant="icon" />
+            </div>
+
+            {/* AI Search - Both mobile and desktop */}
+            <AISearch variant="icon" />
+            
             <ThemeToggle />
             
             {status === "loading" ? (
