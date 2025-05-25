@@ -1,4 +1,32 @@
 import { auth } from "@/auth"
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  // Early return if this is not an oauth callback
+  if (!request.nextUrl.pathname.startsWith('/api/auth/callback')) {
+    return NextResponse.next();
+  }
+
+  const currentHost = request.headers.get('host') || 'localhost:3000';
+  
+  // Detect if we're running in a production environment
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  // If we're in production but still using localhost, redirect to the proper domain
+  if (isProduction && currentHost.includes('localhost')) {
+    const productionHost = process.env.NEXTAUTH_URL || request.headers.get('x-forwarded-host') || currentHost;
+    
+    // Clone the URL and update the host
+    const url = request.nextUrl.clone();
+    url.host = productionHost.replace(/https?:\/\//, '');
+    url.protocol = 'https';
+    
+    return NextResponse.redirect(url);
+  }
+  
+  return NextResponse.next();
+}
 
 export default auth((req) => {
   console.log('[Middleware]', {

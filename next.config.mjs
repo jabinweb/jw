@@ -104,12 +104,25 @@ const nextConfig = {
   },
 }
 
+// Optimize PWA configuration to reduce development warnings
 const withPWA = NextPWA({
   dest: 'public',
   register: true,
   skipWaiting: true,
+  // Only disable PWA features in development, not in production
   disable: process.env.NODE_ENV === 'development',
-  buildExcludes: [/middleware-manifest\.json$/],
+  // Prevent duplicate service worker registrations during hot module reload
+  reloadOnOnline: false,
+  // Reduce warnings during development
+  buildExcludes: [
+    /middleware-manifest\.json$/,
+    /workbox-(.)*\.js$/,
+    /fallback-(.)*\.js$/,
+    // Exclude hot update files
+    /\.hot-update\.(js|json)$/,
+  ],
+  // Fix for duplicate manifest generation
+  publicExcludes: ['!workbox-*.js', '!sw.js'],
   // Include offline support
   runtimeCaching: [
     {

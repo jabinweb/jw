@@ -49,10 +49,13 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Ensure proper PWA support with explicit tags */}
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#7C3AED" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={inter.className}>
         <NextSSRPlugin 

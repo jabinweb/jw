@@ -4,10 +4,31 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { db } from "@/lib/db"
 import { UserRole } from "@prisma/client"
 
+// Fix: Add better URL detection for production environment
+function getBaseUrl() {
+  // Check for NEXTAUTH_URL in environment - highest priority
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+  
+  // Check if we're in a Vercel environment
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  
+  // Check for other common production environment variables
+  if (process.env.URL) {
+    return process.env.URL;
+  }
+  
+  // Fallback to localhost for development
+  return 'http://localhost:3000';
+}
+
 export const { auth, handlers } = NextAuth({
   pages: {
     signIn: '/login',
-    error: '/login', // Add error page
+    error: '/login?error=true', // Add error page
   },
   callbacks: {
     async jwt({ token, user, account, profile }) {
@@ -32,6 +53,11 @@ export const { auth, handlers } = NextAuth({
         session.user.id = token.id as string
         session.user.role = token.role as UserRole
       }
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Auth session URL:', getBaseUrl());
+      }
+      
       return session
     },
     async redirect({ url, baseUrl }) {
@@ -91,6 +117,15 @@ export const { auth, handlers } = NextAuth({
     GoogleProvider({
       clientId: process.env.GOOGLE_ID!,
       clientSecret: process.env.GOOGLE_SECRET!,
+      allowDangerousEmailAccountLinking: true,
+      // Ensure correct redirect URL in production
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        }
+      }
     }),
     CredentialsProvider({
       name: "Credentials",
