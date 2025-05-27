@@ -5,8 +5,10 @@ import { Toaster } from '@/components/ui/toaster'
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 
 // Add these exports to control which pages are static vs dynamic
 export const dynamic = 'auto';
@@ -15,28 +17,64 @@ export const revalidate = 60;
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const viewport: Viewport = {
-  themeColor: '#7C3AED',
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-}
-
 export const metadata: Metadata = {
-  title: 'Jabin Web - Web Design and Development Services',
-  description: 'Professional web design, development, and digital marketing services',
+  title: {
+    default: 'Jabin Web - Professional Web Design & Development Services',
+    template: '%s | Jabin Web'
+  },
+  description: 'Professional web design, development, and digital marketing services. Custom websites, e-commerce solutions, and digital transformation for businesses.',
+  keywords: ['web design', 'web development', 'digital marketing', 'e-commerce', 'custom websites', 'responsive design'],
+  authors: [{ name: 'Jabin Web Team' }],
+  creator: 'Jabin Web',
+  publisher: 'Jabin Web',
+  metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: '/',
+    title: 'Jabin Web - Professional Web Design & Development Services',
+    description: 'Professional web design, development, and digital marketing services. Custom websites, e-commerce solutions, and digital transformation for businesses.',
+    siteName: 'Jabin Web',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Jabin Web - Professional Web Services',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Jabin Web - Professional Web Design & Development Services',
+    description: 'Professional web design, development, and digital marketing services.',
+    images: ['/og-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   manifest: '/manifest.json',
   icons: {
-    apple: '/icons/icon-192x192.png',
+    icon: [
+      { url: '/jabinweb_logo.png', type: 'image/png' },
+      { url: '/favicon.ico', type: 'image/x-icon' },
+    ],
+    apple: [
+      { url: '/jabinweb_logo.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/jabinweb_logo.png',
   },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Jabin Web',
-  },
-  other: {
-    "mobile-web-app-capable": "yes",
-  }
 };
 
 export default async function RootLayout({
@@ -49,13 +87,10 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Ensure proper PWA support with explicit tags */}
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#7C3AED" />
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/jabinweb_logo.png" type="image/png" />
+        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/jabinweb_logo.png" />
+        <meta name="theme-color" content="#3b82f6" />
       </head>
       <body className={inter.className}>
         <NextSSRPlugin 
@@ -63,8 +98,10 @@ export default async function RootLayout({
         />
         <Providers session={session}>
           {children}
-          <Toaster />
         </Providers>
+        <Toaster />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )

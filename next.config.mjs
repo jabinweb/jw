@@ -46,6 +46,9 @@ const nextConfig = {
         hostname: '**', // Consider restricting this to specific domains in production
       },
     ],
+    // Optimize logo loading
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   // Add security headers for PWA
   async headers() {

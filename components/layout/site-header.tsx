@@ -21,10 +21,11 @@ import { useSession } from "next-auth/react"
 import { signOut } from "next-auth/react"
 
 const navigation = [
-  { name: 'Home', href: '/' },
+  // { name: 'Home', href: '/' },
   { name: 'Portfolio', href: '/portfolio' },
   { name: 'Pricing', href: '/pricing' },
   { name: 'Blog', href: '/blog' },
+  { name: 'Tools', href: '/tools' }, 
   { name: 'Contact', href: '/contact' },
 ];
 
@@ -40,7 +41,7 @@ export function SiteHeader() {
       <Container>
         <div className="flex h-16 items-center justify-between">
           {/* Logo Section */}
-          <Logo />
+          <Logo asLink={true} />
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex flex-1 items-center justify-center space-x-6">
