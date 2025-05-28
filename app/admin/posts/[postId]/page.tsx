@@ -139,9 +139,9 @@ export default function EditPostPage({ params }: { params: { postId: string } })
           />
         </div>
 
-        {/* Sidebar */}
+        {/* Sticky Sidebar */}
         <div className="space-y-4">
-          <Card className="p-4">
+          <Card className="p-4 sticky top-6">
             <h2 className="font-semibold mb-4">Post Settings</h2>
             {!isNew && (
               <div className="space-y-4 mb-4 text-sm">

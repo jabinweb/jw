@@ -101,7 +101,7 @@ export function RealTimeStats() {
           </Badge>
         </div>
         <div className="text-xs text-muted-foreground mt-1">
-          Vercel Analytics
+          Google Analytics
         </div>
       </Card>
     </div>

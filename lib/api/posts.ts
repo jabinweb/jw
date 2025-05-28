@@ -54,6 +54,8 @@ export async function saveDraftPost(data: PostFormValues) {
 
 export async function getPosts() {
   try {
+    console.log('[getPosts] Fetching posts from /api/posts...')
+    
     const response = await fetch('/api/posts', {
       credentials: 'include',
       headers: { 'Accept': 'application/json' }
@@ -61,18 +63,30 @@ export async function getPosts() {
 
     const data = await response.json()
     
+    console.log('[getPosts] API Response:', {
+      status: response.status,
+      postsCount: data.posts?.length,
+      total: data.total
+    })
+    
     if (!response.ok) {
       throw new Error(data.error || 'Failed to fetch posts')
     }
 
+    // Handle content properly - don't try to parse HTML as JSON
+    const formattedPosts = data.posts.map((post: any) => {
+      // Keep content as is since it's HTML, not JSON
+      return {
+        ...post,
+        content: post.content // Keep HTML content as string
+      }
+    })
+
+    console.log('[getPosts] Successfully processed', formattedPosts.length, 'posts')
+
     return {
       ...data,
-      posts: data.posts.map((post: any) => ({
-        ...post,
-        content: typeof post.content === 'string'
-          ? JSON.parse(post.content)
-          : post.content
-      }))
+      posts: formattedPosts
     }
   } catch (error) {
     console.error('[getPosts] Error:', error)

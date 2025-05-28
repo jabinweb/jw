@@ -43,6 +43,22 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'uploadthing.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'utfs.io',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.uploadthing.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'sea1.ingest.uploadthing.com',
+      },
+      {
+        protocol: 'https',
         hostname: '**', // Consider restricting this to specific domains in production
       },
     ],

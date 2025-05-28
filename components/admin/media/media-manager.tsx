@@ -96,6 +96,62 @@ export function MediaManager({ onSelect, initialSelectedUrl }: MediaManagerProps
     if (onSelect) onSelect(url);
   };
 
+  // Handle UploadThing completion with database save
+  const handleUploadComplete = async (res: any[]) => {
+    console.log('Upload completed:', res);
+    
+    for (const file of res) {
+      try {
+        // Save to database via API
+        const response = await fetch('/api/media', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: file.url,
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            key: file.key
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to save to database');
+        }
+
+        const savedMedia = await response.json();
+        console.log('Media saved to database:', savedMedia.id);
+        
+      } catch (error) {
+        console.error('Database save error:', error);
+        toast({
+          title: "Upload Warning",
+          description: `File uploaded but not saved to library: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          variant: "destructive"
+        });
+      }
+    }
+    
+    // Refresh media list
+    fetchMedia();
+    
+    toast({
+      title: "Upload complete",
+      description: `${res.length} files uploaded successfully`
+    });
+  };
+
+  // Handle upload errors
+  const handleUploadError = (error: Error) => {
+    console.error('Upload error:', error);
+    toast({
+      title: "Upload failed",
+      description: error.message,
+      variant: "destructive"
+    });
+  };
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="upload">
@@ -108,21 +164,8 @@ export function MediaManager({ onSelect, initialSelectedUrl }: MediaManagerProps
           <div className="mb-6">
             <UploadDropzone
               endpoint="imageUploader"
-              onClientUploadComplete={(res) => {
-                toast({
-                  title: "Upload complete",
-                  description: `${res.length} files uploaded successfully`
-                });
-                // Add a small delay before fetching to ensure the server has time to process
-                setTimeout(fetchMedia, 500);
-              }}
-              onUploadError={(error) => {
-                toast({
-                  title: "Upload failed",
-                  description: error.message,
-                  variant: "destructive"
-                });
-              }}
+              onClientUploadComplete={handleUploadComplete}
+              onUploadError={handleUploadError}
             />
           </div>
           
@@ -130,21 +173,8 @@ export function MediaManager({ onSelect, initialSelectedUrl }: MediaManagerProps
             <p className="text-sm text-muted-foreground mb-2">Or use the button</p>
             <UploadButton
               endpoint="imageUploader"
-              onClientUploadComplete={(res) => {
-                toast({
-                  title: "Upload complete",
-                  description: `${res.length} files uploaded successfully`
-                });
-                // Add a small delay before fetching to ensure the server has time to process
-                setTimeout(fetchMedia, 500);
-              }}
-              onUploadError={(error) => {
-                toast({
-                  title: "Upload failed",
-                  description: error.message,
-                  variant: "destructive"
-                });
-              }}
+              onClientUploadComplete={handleUploadComplete}
+              onUploadError={handleUploadError}
             />
           </div>
         </TabsContent>
@@ -180,6 +210,7 @@ export function MediaManager({ onSelect, initialSelectedUrl }: MediaManagerProps
                       alt={item.name}
                       fill
                       className="object-cover"
+                      unoptimized // Add this for UploadThing URLs
                     />
                   ) : (
                     <div className="h-full flex items-center justify-center bg-muted">

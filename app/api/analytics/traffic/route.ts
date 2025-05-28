@@ -3,19 +3,19 @@ import { googleAnalytics } from '@/lib/google-analytics'
 
 export async function GET() {
   try {
-    console.log('[REALTIME_API] Starting realtime request...')
+    console.log('[TRAFFIC_API] Starting traffic request...')
     
-    const realtimeData = await googleAnalytics.getRealTimeData()
+    const trafficData = await googleAnalytics.getAnalytics('7d')
     
-    console.log('[REALTIME_API] Successfully fetched realtime data')
+    console.log('[TRAFFIC_API] Successfully fetched traffic data')
     
-    return NextResponse.json(realtimeData)
+    return NextResponse.json(trafficData)
   } catch (error) {
-    console.error('[REALTIME_API] Error:', error)
+    console.error('[TRAFFIC_API] Error:', error)
     
     return NextResponse.json(
       { 
-        error: "Realtime API Error",
+        error: "Traffic API Error",
         message: error instanceof Error ? error.message : "Unknown error occurred"
       }, 
       { status: 500 }

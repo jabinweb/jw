@@ -110,18 +110,24 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
+    // Match the admin page's expected parameters
+    const limit = Number(searchParams.get("limit")) || 50
+    const offset = Number(searchParams.get("offset")) || 0
     const page = Number(searchParams.get("page")) || 1
-    const limit = Number(searchParams.get("limit")) || 10
+
+    console.log('[GET] Request params:', { limit, offset, page })
 
     const [posts, total] = await Promise.all([
       db.post.findMany({
-        skip: (page - 1) * limit,
+        skip: offset || (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: "desc" },
         include: {
           author: {
             select: {
+              id: true,
               name: true,
+              email: true,
               image: true,
             },
           },
@@ -130,33 +136,51 @@ export async function GET(req: Request) {
       db.post.count(),
     ])
 
-    // Safely parse content and metadata
-    const formattedPosts = posts.map(post => {
-      let parsedContent;
-      try {
-        parsedContent = typeof post.content === 'string' 
-          ? JSON.parse(post.content)
-          : post.content;
-      } catch (e) {
-        console.error('[GET] Content parse error:', e);
-        parsedContent = [{ 
-          type: "paragraph", 
-          content: [{ type: "text", text: String(post.content) }] 
-        }];
-      }
+    console.log(`[GET] Found ${posts.length} posts in database, total: ${total}`)
 
+    // Handle content field properly - keep HTML content as is
+    const formattedPosts = posts.map(post => {
+     
       return {
-        ...post,
-        content: parsedContent,
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        content: post.content, // Keep content as is (HTML)
+        excerpt: post.excerpt || '',
+        status: post.status,
+        featuredImage: post.featuredImage || '',
+        authorId: post.authorId,
+        createdAt: post.createdAt.toISOString(),
+        updatedAt: post.updatedAt.toISOString(),
+        publishedAt: post.publishedAt?.toISOString() || null,
+        author: {
+          id: post.author.id,
+          name: post.author.name || 'Unknown',
+          email: post.author.email || '',
+          image: post.author.image
+        },
         metadata: post.metadata || null
       };
     });
 
-    return NextResponse.json({
+    console.log(`[GET] Successfully formatted ${formattedPosts.length} posts`)
+
+    // Return the expected structure for admin page
+    const response = {
       posts: formattedPosts,
-      pageCount: Math.ceil(total / limit),
       total,
-    });
+      hasMore: offset + posts.length < total,
+      // Also include legacy pagination for compatibility
+      pageCount: Math.ceil(total / limit),
+    }
+
+    console.log('[GET] Returning response:', {
+      postsCount: response.posts.length,
+      total: response.total,
+      hasMore: response.hasMore
+    })
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("[POSTS_GET] Error:", error);
     return new NextResponse(

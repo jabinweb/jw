@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
+import { googleAnalytics } from '@/lib/google-analytics'
 
 export async function GET(request: NextRequest) {
   const session = await auth()
@@ -12,135 +13,19 @@ export async function GET(request: NextRequest) {
   const range = searchParams.get('range') || '7d'
 
   try {
-    // Direct Vercel Analytics API integration without SDK
-    const { since, until } = getDateRange(range)
+    console.log('[ANALYTICS_API] Fetching Google Analytics data for range:', range)
     
-    const analyticsData = await fetchVercelAnalytics(since, until, range)
+    // Use Google Analytics service instead of Vercel
+    const analyticsData = await googleAnalytics.getAnalytics(range)
     
+    console.log('[ANALYTICS_API] Successfully fetched analytics data')
     return NextResponse.json(analyticsData)
   } catch (error) {
-    console.error('Analytics API error:', error)
+    console.error('[ANALYTICS_API] Error:', error)
+    
     // Return mock data as fallback
     return NextResponse.json(getMockAnalytics(range))
   }
-}
-
-async function fetchVercelAnalytics(since: number, until: number, range: string) {
-  const projectId = process.env.VERCEL_PROJECT_ID
-  const token = process.env.VERCEL_ACCESS_TOKEN
-  const teamId = process.env.VERCEL_TEAM_ID
-
-  if (!projectId || !token) {
-    throw new Error('Vercel configuration missing')
-  }
-
-  const baseUrl = 'https://vercel.com/api/web/insights'
-  const params = new URLSearchParams({
-    projectId,
-    since: since.toString(),
-    until: until.toString(),
-    ...(teamId && { teamId })
-  })
-
-  const headers = {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  }
-
-  try {
-    // Fetch multiple endpoints in parallel
-    const [pageviewsRes, countriesRes, devicesRes, pagesRes] = await Promise.all([
-      fetch(`${baseUrl}/pageviews?${params}`, { headers }),
-      fetch(`${baseUrl}/countries?${params}`, { headers }),
-      fetch(`${baseUrl}/devices?${params}`, { headers }),
-      fetch(`${baseUrl}/pages?${params}`, { headers })
-    ])
-
-    const [pageviews, countries, devices, pages] = await Promise.all([
-      pageviewsRes.ok ? pageviewsRes.json() : { total: 0, data: [] },
-      countriesRes.ok ? countriesRes.json() : { data: [] },
-      devicesRes.ok ? devicesRes.json() : { data: [] },
-      pagesRes.ok ? pagesRes.json() : { data: [] }
-    ])
-
-    return {
-      pageviews: pageviews.total || 0,
-      visitors: Math.floor((pageviews.total || 0) * 0.75),
-      countries: countries.data?.map((c: any) => c.code || c.country) || [],
-      topPages: pages.data?.slice(0, 10)?.map((p: any) => ({
-        page: p.path || '/',
-        views: p.views || 0
-      })) || [],
-      deviceTypes: processDevices(devices.data || []),
-      trafficData: generateTrafficData(pageviews.data || [], range),
-      bounceRate: Math.floor(Math.random() * 30) + 40,
-      avgSessionDuration: Math.floor(Math.random() * 180) + 120
-    }
-  } catch (error) {
-    console.error('Vercel API fetch error:', error)
-    throw error
-  }
-}
-
-function processDevices(devices: any[]) {
-  const total = devices.reduce((sum, device) => sum + (device.visitors || 0), 0)
-  
-  return devices.map(device => ({
-    type: device.type || 'Unknown',
-    count: device.visitors || 0,
-    percentage: total > 0 ? Math.round((device.visitors || 0) / total * 100) : 0
-  }))
-}
-
-function getDateRange(range: string) {
-  const until = Date.now()
-  let since: number
-
-  switch (range) {
-    case '24h':
-      since = until - (24 * 60 * 60 * 1000)
-      break
-    case '7d':
-      since = until - (7 * 24 * 60 * 60 * 1000)
-      break
-    case '30d':
-      since = until - (30 * 24 * 60 * 60 * 1000)
-      break
-    case '90d':
-      since = until - (90 * 24 * 60 * 60 * 1000)
-      break
-    default:
-      since = until - (7 * 24 * 60 * 60 * 1000)
-  }
-
-  return { since, until }
-}
-
-function generateTrafficData(timeseries: any[], range: string) {
-  if (timeseries.length > 0) {
-    return timeseries.map((item: any) => ({
-      date: new Date(item.timestamp).toLocaleDateString(),
-      views: item.count || item.pageviews || 0,
-      visitors: Math.floor((item.count || item.pageviews || 0) * 0.7)
-    }))
-  }
-  
-  // Generate mock data if no real data
-  const days = range === '24h' ? 1 : range === '7d' ? 7 : range === '30d' ? 30 : 90
-  const data = []
-  
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date()
-    date.setDate(date.getDate() - i)
-    
-    data.push({
-      date: date.toLocaleDateString(),
-      views: Math.floor(Math.random() * 500) + 100,
-      visitors: Math.floor(Math.random() * 350) + 70
-    })
-  }
-  
-  return data
 }
 
 function getMockAnalytics(range: string) {
@@ -162,8 +47,26 @@ function getMockAnalytics(range: string) {
       { type: 'mobile', count: Math.floor(Math.random() * 250) + 150, percentage: 35 },
       { type: 'tablet', count: Math.floor(Math.random() * 50) + 20, percentage: 5 }
     ],
-    trafficData: generateTrafficData([], range),
+    trafficData: generateTrafficData(range),
     bounceRate: Math.floor(Math.random() * 30) + 40,
     avgSessionDuration: Math.floor(Math.random() * 180) + 120
   }
+}
+
+function generateTrafficData(range: string) {
+  const days = range === '24h' ? 1 : range === '7d' ? 7 : range === '30d' ? 30 : 90
+  const data = []
+  
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date()
+    date.setDate(date.getDate() - i)
+    
+    data.push({
+      date: date.toLocaleDateString(),
+      views: Math.floor(Math.random() * 500) + 100,
+      visitors: Math.floor(Math.random() * 350) + 70
+    })
+  }
+  
+  return data
 }

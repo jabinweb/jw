@@ -9,6 +9,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import type { Metadata } from 'next';
+import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 
 // Add these exports to control which pages are static vs dynamic
 export const dynamic = 'auto';
@@ -93,6 +94,7 @@ export default async function RootLayout({
         <meta name="theme-color" content="#3b82f6" />
       </head>
       <body className={inter.className}>
+        <GoogleAnalytics />
         <NextSSRPlugin 
           routerConfig={extractRouterConfig(ourFileRouter)} 
         />

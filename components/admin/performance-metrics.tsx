@@ -20,7 +20,7 @@ interface PerformanceMetrics {
   loadTime: number
   pageSize: number
   requestCount: number
-  lighthouse: {
+  lighthouse?: {
     performance: number
     accessibility: number
     bestPractices: number
@@ -31,6 +31,7 @@ interface PerformanceMetrics {
 export function PerformanceMetrics() {
   const [data, setData] = useState<PerformanceMetrics | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchPerformanceData()
@@ -39,13 +40,20 @@ export function PerformanceMetrics() {
   const fetchPerformanceData = async () => {
     try {
       setLoading(true)
+      setError(null)
+      
       const response = await fetch('/api/analytics/performance')
-      if (response.ok) {
-        const performanceData = await response.json()
-        setData(performanceData)
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch performance metrics: ${response.status} ${response.statusText}`)
       }
+      
+      const performanceData = await response.json()
+      setData(performanceData)
     } catch (error) {
       console.error('Failed to fetch performance metrics:', error)
+      setError(error instanceof Error ? error.message : 'Unknown error occurred')
+      setData(null)
     } finally {
       setLoading(false)
     }
@@ -107,13 +115,31 @@ export function PerformanceMetrics() {
     )
   }
 
-  if (!data) {
+  if (error) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        Failed to load performance metrics
+      <div className="text-center py-8">
+        <div className="text-red-600 font-medium mb-2">Error Loading Performance Metrics</div>
+        <div className="text-sm text-muted-foreground">{error}</div>
+        <button 
+          onClick={fetchPerformanceData}
+          className="mt-4 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+        >
+          Retry
+        </button>
       </div>
     )
   }
+
+  if (!data) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        No performance data available
+      </div>
+    )
+  }
+
+  // Only use lighthouse data if it exists
+  const lighthouseScores = data.lighthouse
 
   return (
     <div className="space-y-6">
@@ -151,7 +177,7 @@ export function PerformanceMetrics() {
                 {formatMetricValue(key, vital.value)}
               </div>
               <Badge className={`text-xs ${getRatingColor(vital.rating)}`}>
-                {vital.rating.replace('-', ' ')}
+                {vital.rating?.replace('-', ' ')}
               </Badge>
             </div>
             <div className="text-xs text-muted-foreground mt-2 leading-tight">
@@ -165,41 +191,43 @@ export function PerformanceMetrics() {
         ))}
       </div>
 
-      {/* Lighthouse Scores */}
-      <Card className="p-4 sm:p-6">
-        <h3 className="text-lg font-semibold mb-6">Lighthouse Scores</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-          {Object.entries(data.lighthouse).map(([category, score]) => (
-            <div key={category} className="text-center">
-              <div className="relative w-16 h-16 mx-auto mb-3">
-                <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
-                  <path
-                    className="text-muted stroke-current"
-                    strokeDasharray="100, 100"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    strokeWidth="2"
-                  />
-                  <path
-                    className={`stroke-current ${score >= 90 ? 'text-green-500' : score >= 75 ? 'text-yellow-500' : 'text-red-500'}`}
-                    strokeDasharray={`${score}, 100`}
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-bold">{score}</span>
+      {/* Lighthouse Scores - only show if data exists */}
+      {lighthouseScores && (
+        <Card className="p-4 sm:p-6">
+          <h3 className="text-lg font-semibold mb-6">Lighthouse Scores</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            {Object.entries(lighthouseScores).map(([category, score]) => (
+              <div key={category} className="text-center">
+                <div className="relative w-16 h-16 mx-auto mb-3">
+                  <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      className="text-muted stroke-current"
+                      strokeDasharray="100, 100"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      strokeWidth="2"
+                    />
+                    <path
+                      className={`stroke-current ${score >= 90 ? 'text-green-500' : score >= 75 ? 'text-yellow-500' : 'text-red-500'}`}
+                      strokeDasharray={`${score}, 100`}
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-bold">{score}</span>
+                  </div>
                 </div>
+                <span className="text-sm font-medium capitalize text-center block">
+                  {category.replace(/([A-Z])/g, ' $1').trim()}
+                </span>
               </div>
-              <span className="text-sm font-medium capitalize text-center block">
-                {category.replace(/([A-Z])/g, ' $1').trim()}
-              </span>
-            </div>
-          ))}
-        </div>
-      </Card>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Additional Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

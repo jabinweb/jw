@@ -85,4 +85,51 @@ export async function GET(req: Request, { params }: { params: { postId: string }
   }
 }
 
+export async function DELETE(req: Request, { params }: { params: { postId: string } }) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check if post exists and user has permission
+    const post = await db.post.findUnique({
+      where: { id: params.postId },
+      select: { id: true, authorId: true, title: true }
+    })
+
+    if (!post) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 })
+    }
+
+    // Check if user is authorized to delete this post
+    const isAuthor = post.authorId === session.user.id
+    const isAdmin = session.user.role === "admin"
+    
+    if (!isAuthor && !isAdmin) {
+      return NextResponse.json(
+        { error: "You don't have permission to delete this post" },
+        { status: 403 }
+      )
+    }
+
+    // Delete the post
+    await db.post.delete({
+      where: { id: params.postId }
+    })
+
+    console.log('[DELETE] Post deleted successfully:', { id: params.postId, title: post.title })
+    return NextResponse.json({ 
+      success: true, 
+      message: "Post deleted successfully" 
+    })
+  } catch (error) {
+    console.error('[DELETE] Error deleting post:', error)
+    return NextResponse.json(
+      { error: "Failed to delete post" },
+      { status: 500 }
+    )
+  }
+}
+
 

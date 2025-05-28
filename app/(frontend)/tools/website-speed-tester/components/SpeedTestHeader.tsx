@@ -1,29 +1,33 @@
-import { Zap, Shield } from "lucide-react"
+"use client"
+
+import { Gauge, Zap, BarChart3 } from "lucide-react"
 
 export function SpeedTestHeader() {
   return (
-    <div className="text-center mb-16 max-w-4xl mx-auto">
-      <div className="flex items-center justify-center gap-3 mb-6">
-        <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
-          <Zap className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+    <div className="text-center mb-8 sm:mb-12">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl sm:rounded-2xl flex items-center justify-center">
+          <Gauge className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400" />
         </div>
-        <h1 className="text-5xl md:text-6xl font-light text-slate-900 dark:text-slate-100">
-          PageSpeed
-          <span className="font-normal text-blue-600 dark:text-blue-400"> Insights</span>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-slate-100">
+          Website Speed Tester
         </h1>
       </div>
-      <p className="text-base md:text-xl text-slate-600 dark:text-slate-300 font-light leading-relaxed max-w-3xl mx-auto">
-        Analyze your website&apos;s performance with real Google metrics and Jabin AI-powered insights. Get detailed analysis about Core Web Vitals, 
-        mobile optimization, and intelligent recommendations to improve user experience.
+      
+      <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
+        Analyze your website&apos;s performance with Google&apos;s Core Web Vitals. 
+        Get actionable insights to improve your search rankings and user experience.
       </p>
-      <div className="flex items-center justify-center gap-6 mt-6 text-sm text-slate-500 dark:text-slate-400">
-        <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4" />
-          <span>Google PageSpeed API</span>
+
+      {/* Feature badges - Mobile responsive */}
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 sm:px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
+          <Zap className="h-4 w-4 text-green-600" />
+          <span className="text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300">Core Web Vitals</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-          <span>Jabin AI Analysis</span>
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 sm:px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
+          <BarChart3 className="h-4 w-4 text-blue-600" />
+          <span className="text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300">Performance Insights</span>
         </div>
       </div>
     </div>

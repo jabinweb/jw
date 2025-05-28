@@ -16,20 +16,50 @@ export default function PostsPage() {
   useEffect(() => {
     async function fetchPosts() {
       try {
+        setLoading(true)
+        console.log('[ADMIN_POSTS] Fetching posts using getPosts()...')
+        
         const response = await getPosts()
-        setData(response.posts)
+        
+        console.log('[ADMIN_POSTS] getPosts() response:', {
+          postsCount: response.posts?.length,
+          total: response.total,
+          firstPost: response.posts?.[0]?.title
+        })
+        
+        if (response.posts && Array.isArray(response.posts)) {
+          setData(response.posts)
+          console.log('[ADMIN_POSTS] Successfully set data with', response.posts.length, 'posts')
+          
+          toast({
+            title: "Success",
+            description: `Loaded ${response.posts.length} posts`,
+          })
+        } else {
+          console.error('[ADMIN_POSTS] Invalid response format:', response)
+          throw new Error('Invalid response format')
+        }
       } catch (error) {
+        console.error('[ADMIN_POSTS] Error:', error)
         toast({
           title: "Error",
           description: "Failed to load posts",
           variant: "destructive"
         })
+        setData([])
       } finally {
         setLoading(false)
       }
     }
+    
     fetchPosts()
   }, [])
+
+  console.log('[ADMIN_POSTS] Current state:', {
+    dataLength: data.length,
+    loading,
+    firstPostTitle: data[0]?.title
+  })
 
   return (
     <CrudTable<Post>
